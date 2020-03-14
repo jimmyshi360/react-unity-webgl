@@ -62,10 +62,41 @@ export default class Unity extends React.Component<IUnityProps, IUnityState> {
    * @param {number} progression
    * @private
    */
-  private onProgress(unityInstance: UnityInstance, progression: number): void {
-    this.unityContent.triggerUnityEvent("progress", progression);
-    if (progression === 1) this.unityContent.triggerUnityEvent("loaded");
-  }
+  Unity.prototype.onProgress = function (unityInstance, progression) {
+       this.unityContent.triggerUnityEvent("progress", progression);
+       if (progression === 1)
+           this.unityContent.triggerUnityEvent("loaded");
+
+       if (typeof this.htmlElement !== "undefined") {
+           if (!unityInstance.logo) {
+               unityInstance.logo = document.createElement("div");
+               unityInstance.logo.className = "logo " + unityInstance.Module.splashScreenStyle;
+               unityInstance.container.appendChild(unityInstance.logo);
+             }
+             if (!unityInstance.progress) {    
+               unityInstance.progress = document.createElement("div");
+               unityInstance.progress.className = "progress " + unityInstance.Module.splashScreenStyle;
+               unityInstance.progress.empty = document.createElement("div");
+               unityInstance.progress.empty.className = "empty";
+               unityInstance.progress.empty.style.width = "100%";
+               unityInstance.progress.appendChild(unityInstance.progress.empty);
+               unityInstance.progress.full = document.createElement("div");
+               unityInstance.progress.full.className = "full";
+               unityInstance.progress.full.style.width = "0%";
+               unityInstance.progress.appendChild(unityInstance.progress.full);
+               unityInstance.container.appendChild(unityInstance.progress);
+             }
+             unityInstance.progress.full.style.width = (100 * (1 - progression)) + "%";
+             unityInstance.progress.empty.style.width = (100 * progression) + "%";
+             if (progression == 1) {
+               unityInstance.logo.style.display = unityInstance.progress.style.display = "none";
+             } else {
+                 if (unityInstance.logo && unityInstance.progress) {
+                   unityInstance.logo.style.display = unityInstance.progress.style.display = "flex";
+                 }
+             }
+       }
+   };
 
   /**
    * When the window is resized.
